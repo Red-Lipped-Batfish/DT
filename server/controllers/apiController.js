@@ -209,13 +209,8 @@ apiController.getTravelInfo = (req, res, next) => {
   let { city } = req.params;
   city = city.replace(" ", "%20");
 
-<<<<<<< HEAD
-  const url = `https://api.sygictravelapi.com/1.2/en/places/list?limit=1&query=${city}`;
-  const options = { headers: { "x-api-key": "pi9AODHpaqUOdUTgNweA7LbzxbJFKkD7O9fZ0We8" } };
-=======
   const url = `https://api.sygictravelapi.com/1.2/en/places/list?query=${city}`;
-  const options = { headers: { 'x-api-key': 'pi9AODHpaqUOdUTgNweA7LbzxbJFKkD7O9fZ0We8' } };
->>>>>>> master
+  const options = { headers: { "x-api-key": "pi9AODHpaqUOdUTgNweA7LbzxbJFKkD7O9fZ0We8" } };
   axios
     .get(url, options)
     .then((response) => {
