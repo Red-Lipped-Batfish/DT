@@ -109,26 +109,16 @@ apiController.getSpotifyData = (req, res, next) => {
       const tracksURL = data.playlists.items.find(
         (playlist) => playlist.name === `${country} Top 50`
       );
-      // console.log('This is the tracksURL.id -> ', tracksURL);
-      // fetch track list of regional top 50
-      // fetch(tracksURL, options)
-      //   .then(response => response.json())
-      //   .then(tracks => {
-      //     // format tracks
-      //     const trackList = tracks.items.map(track => ({
-      //       name: track.track.name,
-      //       by: track.track.artists[0].name,
-      //       url: track.track.external_urls.spotify,
-      //     }));
 
       res.locals.data.trackList = tracksURL.id;
       return next();
     })
-    .catch((err) => {
-      console.log('error fetching specific playlist: ', err);
-      res.locals.data.trackList = [];
-      return next();
-    });
+    .catch((err) =>
+      next({
+        log: 'Error fetching tracklist data from Spotify Api.',
+        message: { error: 'Error from Spotify Api: ', err },
+      })
+    );
 
   // .catch( (err) => {
   //   console.log('spotify not available in specified country');
@@ -139,16 +129,33 @@ apiController.getSpotifyData = (req, res, next) => {
 
 apiController.getComplexRecipes = (req, res, next) => {
   // const searchCuisine = req.body.searchParams;
-  const countryKey = req.params.country.toLowerCase();
+  let countryKey = req.params.country.toLowerCase();
+  if (
+    countryKey === 'us' ||
+    countryKey === 'usa' ||
+    countryKey === 'united states' ||
+    countryKey === 'america'
+  ) {
+    countryKey = 'unitedStates';
+  }
+  if (
+    countryKey === 'uk' ||
+    countryKey === 'united kingdom' ||
+    countryKey === 'britain' ||
+    countryKey === 'great britain' ||
+    countryKey === 'gb'
+  ) {
+    countryKey = 'unitedKingdom';
+  }
   const cuisineObj = {
-    argentina: 'Spanish',
+    argentina: 'Latin American',
     australia: 'British',
     austria: 'European',
-    brazil: 'Spanish',
+    brazil: 'Latin American',
     canada: 'British',
     chile: 'Spanish',
     china: 'Chinese',
-    colombia: 'Spanish',
+    colombia: 'Latin American',
     denmark: 'European',
     egypt: 'African',
     estonia: 'European',
@@ -160,10 +167,12 @@ apiController.getComplexRecipes = (req, res, next) => {
     india: 'Indian',
     indonesia: 'Chinese',
     iran: 'Mediterranean',
-    ireland: 'European',
+    ireland: 'Irish',
     israel: 'Jewish',
     italy: 'Italian',
     japan: 'Japanese',
+    unitedKingdom: 'British',
+    unitedStates: 'American',
   };
 
   let cuisineChoice;
@@ -185,13 +194,17 @@ apiController.getComplexRecipes = (req, res, next) => {
       res.locals.data.recipes = response.data.results;
       return next();
     })
-    .catch((err) => console.log('Error fetching data from Spoonacular Api: ', err));
+    .catch((err) =>
+      next({
+        log: 'Error fetching data from Spoonacular Api.',
+        message: { error: 'Error from Spoonacular Api: ', err },
+      })
+    );
 };
 
 apiController.getYouTubeVideos = (req, res, next) => {
   let { city } = req.params;
   city = city.replace(' ', '%20');
-  console.log('city =', city);
 
   const url = `https://www.googleapis.com/youtube/v3/search?q=${city}%20travel&key=AIzaSyC3SG6pLaOfulxfZeyl7Uy489tCAF-m1XQ`;
 
@@ -202,23 +215,33 @@ apiController.getYouTubeVideos = (req, res, next) => {
       res.locals.data.youtube = response.data.items;
       return next();
     })
-    .catch((err) => console.log('Error fetching data from YouTube API:', err));
+    .catch((err) =>
+      next({
+        log: 'Error fetching data from YouTube Api.',
+        message: { error: 'Error from YouTube Api: ', err },
+      })
+    );
 };
 
 apiController.getTravelInfo = (req, res, next) => {
   let { city } = req.params;
   city = city.replace(' ', '%20');
-
-  console.log('This is the city in getTravelInfo: ', city);
+  // console.log("This is the city in getTravelInfo: ", city);
   const url1 = `https://api.sygictravelapi.com/1.2/en/places/list?limit=1&query=${city}`;
   const options = { headers: { 'x-api-key': 'pi9AODHpaqUOdUTgNweA7LbzxbJFKkD7O9fZ0We8' } };
+
+  city = city.replace(' ', '%20');
+
+  console.log('This is the city in getTravelInfo: ', city);
 
   axios
     .get(url1, options)
     .then((response1) => {
       const placeInfo = response1.data.data.places;
       const { id } = placeInfo[0];
+
       console.log('This is the id in getTravelInfo: ', id);
+
       const url2 = `https://api.sygictravelapi.com/1.1/en/places/list?parents=${id}&categories=sightseeing&limit=10`;
       axios
         .get(url2, options)
@@ -237,6 +260,11 @@ apiController.getTravelInfo = (req, res, next) => {
           });
         });
     })
-    .catch((err) => console.log('Error fetching data from Travel Site API', err));
+    .catch((err) =>
+      next({
+        log: 'Error fetching data from Sygic Travel Api.',
+        message: { error: 'Error from Sygic Travel Api: ', err },
+      })
+    );
 };
 module.exports = apiController;
