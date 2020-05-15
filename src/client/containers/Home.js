@@ -1,75 +1,75 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-filename-extension */
-import React from "react";
-import { useState, useEffect } from "react";
-import { FontAwesomeIcon as FAIcon } from "@fortawesome/react-fontawesome";
-import { faStar as regStar } from "@fortawesome/free-regular-svg-icons";
-import { faStar as solidStar } from "@fortawesome/free-solid-svg-icons";
+import React from 'react';
+import { useState, useEffect } from 'react';
+import { FontAwesomeIcon as FAIcon } from '@fortawesome/react-fontawesome';
+import { faStar as regStar } from '@fortawesome/free-regular-svg-icons';
+import { faStar as solidStar } from '@fortawesome/free-solid-svg-icons';
 
-import Spotify from "./Spotify";
-import Weather from "./Weather";
-import Window from "./Window";
-import Search from "./Search";
-import Food from "./Food";
-import Favorites from "./Favorites";
-import Attractions from "./Attractions";
-import Youtube from "./Youtube";
-import unsplashId from "../../unsplash_id";
+import Spotify from '../components/Spotify';
+import Weather from '../components/Weather';
+import Window from '../components/Window';
+import Search from '../components/Search';
+import Food from '../components/Food';
+import Favorites from '../components/Favorites';
+import Attractions from '../components/Attractions';
+import Youtube from '../components/Youtube';
+import unsplashId from '../../unsplash_id';
 
 const Home = () => {
-  const [current, setCurrent] = useState({});  
+  const [current, setCurrent] = useState({});
   // current is the bigAssObject we receive from "grabLocationData" that feeds most of the components with data
-  const [username, setUserName] = useState("");
+  const [username, setUserName] = useState('');
   // for welcoming
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   // unique name to add favs to db
   const [favorites, setFavorites] = useState([]);
   // array of favs we got on initial load
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   // save users search in case he wants to add it to favs(we only save his query, not actual country data
   const [iconStatus, setFavIcon] = useState(false);
   // FavIcon condition
-  
+
   // since its different every time)
 
   // initial load
   useEffect(() => {
-    fetch("http://localhost:8080/api/user")
+    fetch('http://localhost:8080/api/user')
       .then((res) => res.json())
       .then((user) => {
-        console.log('Api/user path')
+        console.log('Api/user path');
         setUserName(user.display_name);
-        console.log('line 42 before email')
+        console.log('line 42 before email');
         setEmail(user.email);
-        console.log('line 44 after email')
-        console.log('Updating favs: ', user.favsArray)
+        console.log('line 44 after email');
+        console.log('Updating favs: ', user.favsArray);
         setFavorites(user.favsArray);
       })
       .catch((err) => err);
   }, []);
   // fires up on search submit and on click of fav city
   const grabLocationData = (location) => {
-    console.log('Grabbing location')
+    console.log('Grabbing location');
     if (!location) return;
     // change the format of incoming string to add if as params
     const locationString = location
-      .split(",")
+      .split(',')
       .map((word) => word.trim())
-      .join("&");
+      .join('&');
     fetch(`http://localhost:8080/api/${locationString}`)
       .then((data) => data.json())
       .then((response) => {
-        console.log("This is the response in grabLocationData: ", response);
+        console.log('This is the response in grabLocationData: ', response);
         setCurrent(response);
-        setQuery(email + ", " + response.userQuery);
+        setQuery(email + ', ' + response.userQuery);
       });
-    
+
     fetch(
       `https://api.unsplash.com/search/photos?query=${locationString},skyline&client_id=${unsplashId}`
     )
       .then((data) => data.json())
       .then((response) => {
-        console.log("This is the response from unsplash: ", response);
+        console.log('This is the response from unsplash: ', response);
         const gradientOpacity = 0.2;
         const rand = Math.floor(Math.random() * 1000);
         document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, ${gradientOpacity}), rgba(0, 0, 0, ${gradientOpacity})), url(${response.results[1].urls.full})`;
@@ -78,16 +78,16 @@ const Home = () => {
   // toggle fav doesnt toggle, only adds fav, there is no way to remove it, sorry guys, we had no time:(
   const toggleFav = (queryString) => {
     // format the string for params
-    const values = queryString.split(",").map((elem) => elem.trim());
+    const values = queryString.split(',').map((elem) => elem.trim());
     const city = values[1];
     const country = values[2];
     const userEmail = values[0];
     fetch(`http://localhost:8080/api/toggleFav/${city}&${country}&${userEmail}`, {
-      method: "POST",
+      method: 'POST',
     })
       .then((data) => data.json())
       .then((updatedFavs) => {
-        console.log('Updating favs: ', updatedFavs)
+        console.log('Updating favs: ', updatedFavs);
         setFavorites(updatedFavs);
         // receive new array of favs and change the state
       });
@@ -114,7 +114,7 @@ const Home = () => {
   }
 
   // Determine star icon based on whether current city is a favorite or not
-  const favIcon =( 
+  const favIcon = (
     <span className="favIcon empty-icon">
       <FAIcon
         onClick={() => {
@@ -122,9 +122,9 @@ const Home = () => {
         }}
         size="2x"
         icon={regStar}
-        style={{ color: "white" }}
+        style={{ color: 'white' }}
       />
-  </span>
+    </span>
   );
   // const values = current.userQuery.split(",").map((elem) => elem.trim());
   // // If the favorites array is not empty
@@ -147,12 +147,12 @@ const Home = () => {
     <div id="main">
       <div id="leftColumn">
         <div className="welcoming">
-          {" "}
+          {' '}
           <br />
           Welcome, {username}
           !
           <br />
-          <br />{" "}
+          <br />{' '}
         </div>
         <Weather weather={current.weatherData} />
         <Window country={current.countryData} />
@@ -174,7 +174,6 @@ const Home = () => {
           ></iframe>
         </div> */}
         <Attractions attractions={current.travelInfo} />
-        
       </div>
       <div id="rightColumn">
         <Favorites
@@ -186,6 +185,6 @@ const Home = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Home;
